@@ -111,15 +111,17 @@ class Track(TrackProxy):
 
 def _wait_for_pending_track(trid, timeout):
     # timeout is ignored for now
+    end = time.time() + timeout
     status = 'pending'
     while status == 'pending':
         time.sleep(1)
+        if time.time() > end:
+            raise Exception('the operation didn\'t complete before the timeout (%d secs)' % timeout)
         param_dict = {'id': trid} # dict(id = identifier)
         param_dict['format'] = 'json'
         param_dict['bucket'] = 'audio_summary'
         result = util.callm('track/profile', param_dict)
         status = result['response']['track']['status'].lower()
-        # TODO: timeout if necessary
     return result
 
 def _track_from_response(result, timeout=DEFAULT_ASYNC_TIMEOUT):
